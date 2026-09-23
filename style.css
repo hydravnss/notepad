@@ -1,65 +1,57 @@
-/* =================================
+/* =====================================
    NOTEPAD BUTTON
-   ================================= */
+   ===================================== */
 
 .st-notepad-button {
 
     position: fixed;
 
-    right: 16px;
-    bottom: 16px;
+    z-index: 2147483647;
 
     width: 42px;
     height: 42px;
 
-    z-index: 2147483647;
+    padding: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     border: none;
+
     border-radius: 12px;
 
-    background: rgba(30, 30, 34, .95);
+    background:
+        rgba(25,25,28,.95);
 
     color: white;
 
     font-size: 22px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     cursor: pointer;
 
     box-shadow:
-        0 4px 18px rgba(0,0,0,.5);
+        0 5px 20px
+        rgba(0,0,0,.5);
 
-    padding: 0;
-
-    -webkit-tap-highlight-color:
-        transparent;
-}
-
-
-/* =================================
-   HOVER
-   ================================= */
-
-.st-notepad-button:hover {
-
-    transform: scale(1.06);
+    transition:
+        transform .15s ease,
+        background .15s ease;
 
 }
 
 
-/* =================================
-   NOTEPAD
-   ================================= */
+/* =====================================
+   NOTEPAD WINDOW
+   ===================================== */
 
 .st-notepad {
 
     position: fixed;
 
-    right: 16px;
-    bottom: 68px;
+    right: 20px;
+    bottom: 70px;
 
     width: 300px;
     height: 240px;
@@ -67,12 +59,15 @@
     min-width: 220px;
     min-height: 160px;
 
-    max-width: calc(100vw - 20px);
-    max-height: calc(100vh - 90px);
+    max-width:
+        calc(100vw - 20px);
+
+    max-height:
+        calc(100vh - 80px);
 
     z-index: 2147483646;
 
-    display: flex;
+    display: none;
 
     flex-direction: column;
 
@@ -83,24 +78,34 @@
     background:
         rgba(20,20,23,.97);
 
+    color: white;
+
     border:
-        1px solid rgba(255,255,255,.12);
+        1px solid
+        rgba(255,255,255,.12);
 
     border-radius: 14px;
 
     box-shadow:
-        0 15px 50px rgba(0,0,0,.65);
+        0 15px 50px
+        rgba(0,0,0,.65);
 
-    color: white;
-
-    animation:
-        notepadAppear .18s ease-out;
 }
 
 
-/* =================================
+.st-notepad.visible {
+
+    display: flex;
+
+    animation:
+        notepadPop .18s ease-out;
+
+}
+
+
+/* =====================================
    HEADER
-   ================================= */
+   ===================================== */
 
 .st-notepad-header {
 
@@ -121,28 +126,15 @@
         rgba(255,255,255,.06);
 
     border-bottom:
-        1px solid rgba(255,255,255,.08);
-
-    cursor: move;
-
-    user-select: none;
-}
-
-
-.st-notepad-title {
-
-    font-size: 14px;
+        1px solid
+        rgba(255,255,255,.08);
 
     font-weight: 600;
 
 }
 
 
-/* =================================
-   HEADER BUTTONS
-   ================================= */
-
-.st-notepad-buttons {
+.st-notepad-actions {
 
     display: flex;
 
@@ -151,7 +143,7 @@
 }
 
 
-.st-notepad-buttons button {
+.st-notepad-actions button {
 
     width: 30px;
     height: 30px;
@@ -164,24 +156,14 @@
 
     color: white;
 
-    font-size: 15px;
-
     cursor: pointer;
 
 }
 
 
-.st-notepad-buttons button:hover {
-
-    background:
-        rgba(255,255,255,.12);
-
-}
-
-
-/* =================================
+/* =====================================
    TEXTAREA
-   ================================= */
+   ===================================== */
 
 #st-notepad-text {
 
@@ -203,14 +185,13 @@
 
     background: transparent;
 
-    color: #f5f5f5;
+    color: white;
 
     font-family:
         -apple-system,
         BlinkMacSystemFont,
         "SF Pro Text",
         "SF Pro Display",
-        "Segoe UI",
         sans-serif;
 
     font-size: 14px;
@@ -220,19 +201,87 @@
 }
 
 
-#st-notepad-text::placeholder {
+/* =====================================
+   SETTINGS
+   ===================================== */
 
-    color:
-        rgba(255,255,255,.35);
+#notepad_settings {
+
+    margin-bottom: 10px;
 
 }
 
 
-/* =================================
-   ANIMATION
-   ================================= */
+.notepad-setting-title {
 
-@keyframes notepadAppear {
+    margin-top: 12px;
+    margin-bottom: 5px;
+
+    font-weight: 600;
+
+}
+
+
+.notepad-value {
+
+    opacity: .65;
+
+    font-size: 12px;
+
+    margin-top: 3px;
+
+}
+
+
+.notepad-preview {
+
+    position: relative;
+
+    height: 80px;
+
+    margin-top: 8px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(0,0,0,.25);
+
+    border:
+        1px solid
+        rgba(255,255,255,.08);
+
+}
+
+
+#notepad_preview_button {
+
+    position: absolute;
+
+    right: 10px;
+    bottom: 10px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(25,25,28,.95);
+
+    border-radius: 11px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0,0,0,.5);
+
+}
+
+
+/* =====================================
+   ANIMATION
+   ===================================== */
+
+@keyframes notepadPop {
 
     from {
 
@@ -257,29 +306,20 @@
 }
 
 
-/* =================================
-   IPHONE
-   ================================= */
+/* =====================================
+   MOBILE
+   ===================================== */
 
 @media (max-width: 500px) {
 
-    .st-notepad-button {
-
-        right: 12px;
-        bottom: 12px;
-
-    }
-
-
     .st-notepad {
-
-        right: 10px;
-        bottom: 64px;
 
         width:
             calc(100vw - 20px);
 
         height: 280px;
+
+        right: 10px;
 
     }
 
