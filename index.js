@@ -1,59 +1,509 @@
-const NOTEPAD_KEY = 'st_notepad_content';
+const MODULE_NAME = 'notepad';
 
-function init() {
-    // Évite les doublons
-    if (document.getElementById('st-notepad-button')) {
-        return;
+const DEFAULT_SETTINGS = {
+    enabled: true,
+
+    position: 'bottom-right',
+
+    offsetX: 16,
+
+    offsetY: 16,
+
+    buttonSize: 42,
+
+    noteWidth: 300,
+
+    noteHeight: 240
+};
+
+
+function getContext() {
+    return SillyTavern.getContext();
+}
+
+
+function getSettings() {
+
+    const {
+        extensionSettings,
+        saveSettingsDebounced
+    } = getContext();
+
+    if (!extensionSettings[MODULE_NAME]) {
+
+        extensionSettings[MODULE_NAME] = {
+            ...DEFAULT_SETTINGS
+        };
+
+        saveSettingsDebounced();
+
     }
 
-    // =========================
-    // BOUTON 📑
-    // =========================
-
-    const button = document.createElement('button');
-
-    button.id = 'st-notepad-button';
-    button.className = 'st-notepad-button';
-    button.innerHTML = '📑';
-    button.title = 'Notepad';
-
-    document.body.appendChild(button);
+    return extensionSettings[MODULE_NAME];
+}
 
 
-    // =========================
-    // FENÊTRE
-    // =========================
+/* =========================================
+   INITIALISATION
+   ========================================= */
 
-    const notepad = document.createElement('div');
+async function init() {
 
-    notepad.id = 'st-notepad';
-    notepad.className = 'st-notepad';
-    notepad.style.display = 'none';
+    console.log('[Notepad] Initialisation...');
+
+    const {
+        renderExtensionTemplateAsync
+    } = getContext();
+
+
+    /* ================================
+       SETTINGS
+       ================================ */
+
+    const settingsHtml =
+        await renderExtensionTemplateAsync(
+            'third-party/notepad',
+            'settings'
+        );
+
+
+    $('#extensions_settings2').append(
+        settingsHtml
+    );
+
+
+    const settings = getSettings();
+
+
+    /* ================================
+       VALEURS INITIALES
+       ================================ */
+
+    $('#notepad_enabled')
+        .prop(
+            'checked',
+            settings.enabled
+        );
+
+    $('#notepad_position')
+        .val(
+            settings.position
+        );
+
+    $('#notepad_offset_x')
+        .val(
+            settings.offsetX
+        );
+
+    $('#notepad_offset_y')
+        .val(
+            settings.offsetY
+        );
+
+    $('#notepad_button_size')
+        .val(
+            settings.buttonSize
+        );
+
+
+    updateSettingsDisplay();
+
+    createButton();
+
+    createNotepad();
+
+    applyButtonPosition();
+
+
+    /* ================================
+       ÉVÉNEMENTS
+       ================================ */
+
+    $('#notepad_enabled')
+        .on('change', function () {
+
+            settings.enabled =
+                $(this).prop('checked');
+
+            saveSettings();
+
+            updateButton();
+
+        });
+
+
+    $('#notepad_position')
+        .on('change', function () {
+
+            settings.position =
+                $(this).val();
+
+            saveSettings();
+
+            applyButtonPosition();
+
+        });
+
+
+    $('#notepad_offset_x')
+        .on('input change', function () {
+
+            settings.offsetX =
+                Number($(this).val());
+
+            updateSettingsDisplay();
+
+            saveSettings();
+
+            applyButtonPosition();
+
+        });
+
+
+    $('#notepad_offset_y')
+        .on('input change', function () {
+
+            settings.offsetY =
+                Number($(this).val());
+
+            updateSettingsDisplay();
+
+            saveSettings();
+
+            applyButtonPosition();
+
+        });
+
+
+    $('#notepad_button_size')
+        .on('input change', function () {
+
+            settings.buttonSize =
+                Number($(this).val());
+
+            updateSettingsDisplay();
+
+            saveSettings();
+
+            updateButtonSize();
+
+        });
+
+
+    console.log('[Notepad] Chargé.');
+
+}
+
+
+/* =========================================
+   SAUVEGARDE
+   ========================================= */
+
+function saveSettings() {
+
+    const {
+        saveSettingsDebounced
+    } = getContext();
+
+    saveSettingsDebounced();
+
+}
+
+
+/* =========================================
+   AFFICHAGE DES VALEURS
+   ========================================= */
+
+function updateSettingsDisplay() {
+
+    const settings =
+        getSettings();
+
+    $('#notepad_offset_x_value')
+        .text(
+            settings.offsetX
+        );
+
+    $('#notepad_offset_y_value')
+        .text(
+            settings.offsetY
+        );
+
+    $('#notepad_button_size_value')
+        .text(
+            settings.buttonSize
+        );
+
+
+    $('#notepad_preview_button')
+        .css({
+            width:
+                settings.buttonSize + 'px',
+
+            height:
+                settings.buttonSize + 'px',
+
+            fontSize:
+                Math.round(
+                    settings.buttonSize * .52
+                ) + 'px'
+        });
+
+}
+
+
+/* =========================================
+   CRÉATION DU BOUTON
+   ========================================= */
+
+function createButton() {
+
+    if (
+        document.getElementById(
+            'st-notepad-button'
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const button =
+        document.createElement('button');
+
+
+    button.id =
+        'st-notepad-button';
+
+
+    button.className =
+        'st-notepad-button';
+
+
+    button.innerHTML =
+        '📑';
+
+
+    button.title =
+        'Notepad';
+
+
+    button.addEventListener(
+        'click',
+        toggleNotepad
+    );
+
+
+    document.body.appendChild(
+        button
+    );
+
+}
+
+
+/* =========================================
+   POSITION DU BOUTON
+   ========================================= */
+
+function applyButtonPosition() {
+
+    const button =
+        document.getElementById(
+            'st-notepad-button'
+        );
+
+    if (!button) return;
+
+
+    const settings =
+        getSettings();
+
+
+    button.style.top =
+        'auto';
+
+    button.style.bottom =
+        'auto';
+
+    button.style.left =
+        'auto';
+
+    button.style.right =
+        'auto';
+
+
+    if (
+        settings.position ===
+        'bottom-right'
+    ) {
+
+        button.style.right =
+            settings.offsetX + 'px';
+
+        button.style.bottom =
+            settings.offsetY + 'px';
+
+    }
+
+
+    if (
+        settings.position ===
+        'bottom-left'
+    ) {
+
+        button.style.left =
+            settings.offsetX + 'px';
+
+        button.style.bottom =
+            settings.offsetY + 'px';
+
+    }
+
+
+    if (
+        settings.position ===
+        'top-right'
+    ) {
+
+        button.style.right =
+            settings.offsetX + 'px';
+
+        button.style.top =
+            settings.offsetY + 'px';
+
+    }
+
+
+    if (
+        settings.position ===
+        'top-left'
+    ) {
+
+        button.style.left =
+            settings.offsetX + 'px';
+
+        button.style.top =
+            settings.offsetY + 'px';
+
+    }
+
+}
+
+
+/* =========================================
+   TAILLE DU BOUTON
+   ========================================= */
+
+function updateButtonSize() {
+
+    const button =
+        document.getElementById(
+            'st-notepad-button'
+        );
+
+    if (!button) return;
+
+
+    const settings =
+        getSettings();
+
+
+    button.style.width =
+        settings.buttonSize + 'px';
+
+
+    button.style.height =
+        settings.buttonSize + 'px';
+
+
+    button.style.fontSize =
+        Math.round(
+            settings.buttonSize * .52
+        ) + 'px';
+
+}
+
+
+/* =========================================
+   AFFICHER / CACHER
+   ========================================= */
+
+function updateButton() {
+
+    const button =
+        document.getElementById(
+            'st-notepad-button'
+        );
+
+    if (!button) return;
+
+
+    const settings =
+        getSettings();
+
+
+    button.style.display =
+        settings.enabled
+            ? 'flex'
+            : 'none';
+
+}
+
+
+/* =========================================
+   NOTEPAD
+   ========================================= */
+
+function createNotepad() {
+
+    if (
+        document.getElementById(
+            'st-notepad'
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const notepad =
+        document.createElement('div');
+
+
+    notepad.id =
+        'st-notepad';
+
+
+    notepad.className =
+        'st-notepad';
+
 
     notepad.innerHTML = `
+
         <div class="st-notepad-header">
 
-            <span class="st-notepad-title">
+            <span>
                 📑 Notepad
             </span>
 
-            <div class="st-notepad-buttons">
+            <div class="st-notepad-actions">
 
                 <button
-                    id="st-notepad-clear"
-                    title="Effacer">
+                    id="st-notepad-clear">
                     🗑️
                 </button>
 
                 <button
-                    id="st-notepad-close"
-                    title="Fermer">
+                    id="st-notepad-close">
                     ×
                 </button>
 
             </div>
 
         </div>
+
 
         <textarea
             id="st-notepad-text"
@@ -62,169 +512,114 @@ function init() {
 
     `;
 
-    document.body.appendChild(notepad);
 
+    document.body.appendChild(
+        notepad
+    );
 
-    // =========================
-    // CHARGER LES NOTES
-    // =========================
 
     const textarea =
-        document.getElementById('st-notepad-text');
+        document.getElementById(
+            'st-notepad-text'
+        );
+
 
     textarea.value =
-        localStorage.getItem(NOTEPAD_KEY) || '';
+        localStorage.getItem(
+            'st_notepad_content'
+        ) || '';
 
 
-    // =========================
-    // OUVRIR / FERMER
-    // =========================
+    textarea.addEventListener(
+        'input',
+        () => {
 
-    button.addEventListener('click', () => {
-
-        if (notepad.style.display === 'none') {
-
-            notepad.style.display = 'flex';
-
-            textarea.focus();
-
-        } else {
-
-            notepad.style.display = 'none';
-
-        }
-
-    });
-
-
-    document
-        .getElementById('st-notepad-close')
-        .addEventListener('click', () => {
-
-            notepad.style.display = 'none';
-
-        });
-
-
-    // =========================
-    // SAUVEGARDE AUTOMATIQUE
-    // =========================
-
-    textarea.addEventListener('input', () => {
-
-        localStorage.setItem(
-            NOTEPAD_KEY,
-            textarea.value
-        );
-
-    });
-
-
-    // =========================
-    // EFFACER
-    // =========================
-
-    document
-        .getElementById('st-notepad-clear')
-        .addEventListener('click', () => {
-
-            textarea.value = '';
-
-            localStorage.removeItem(
-                NOTEPAD_KEY
+            localStorage.setItem(
+                'st_notepad_content',
+                textarea.value
             );
 
-            textarea.focus();
-
-        });
-
-
-    // =========================
-    // DÉPLACER LA FENÊTRE
-    // =========================
-
-    const header =
-        notepad.querySelector('.st-notepad-header');
-
-    let dragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    header.addEventListener('pointerdown', (event) => {
-
-        if (event.target.closest('button')) {
-            return;
         }
+    );
 
-        dragging = true;
 
-        const rect =
-            notepad.getBoundingClientRect();
+    $('#st-notepad-close')
+        .on(
+            'click',
+            () => {
 
-        offsetX =
-            event.clientX - rect.left;
+                notepad.classList.remove(
+                    'visible'
+                );
 
-        offsetY =
-            event.clientY - rect.top;
-
-        notepad.style.right = 'auto';
-        notepad.style.bottom = 'auto';
-
-        notepad.style.left =
-            rect.left + 'px';
-
-        notepad.style.top =
-            rect.top + 'px';
-
-        header.setPointerCapture(
-            event.pointerId
+            }
         );
 
-    });
 
+    $('#st-notepad-clear')
+        .on(
+            'click',
+            () => {
 
-    header.addEventListener('pointermove', (event) => {
+                textarea.value = '';
 
-        if (!dragging) {
-            return;
-        }
+                localStorage.removeItem(
+                    'st_notepad_content'
+                );
 
-        let x =
-            event.clientX - offsetX;
+                textarea.focus();
 
-        let y =
-            event.clientY - offsetY;
-
-        const maxX =
-            window.innerWidth -
-            notepad.offsetWidth;
-
-        const maxY =
-            window.innerHeight -
-            notepad.offsetHeight;
-
-        x = Math.max(
-            0,
-            Math.min(x, maxX)
+            }
         );
 
-        y = Math.max(
-            0,
-            Math.min(y, maxY)
+}
+
+
+/* =========================================
+   OUVRIR
+   ========================================= */
+
+function toggleNotepad() {
+
+    const notepad =
+        document.getElementById(
+            'st-notepad'
         );
 
-        notepad.style.left =
-            x + 'px';
 
-        notepad.style.top =
-            y + 'px';
-
-    });
+    if (!notepad) return;
 
 
-    header.addEventListener('pointerup', () => {
+    notepad.classList.toggle(
+        'visible'
+    );
 
-        dragging = false;
 
-    });
+    if (
+        notepad.classList.contains(
+            'visible'
+        )
+    ) {
+
+        document
+            .getElementById(
+                'st-notepad-text'
+            )
+            ?.focus();
+
+    }
+
+}
+
+
+/* =========================================
+   LANCEMENT
+   ========================================= */
+
+if (
+    typeof SillyTavern !== 'undefined'
+) {
+
+    init();
+
 }
