@@ -1,0 +1,119 @@
+<div id="notepad_settings">
+
+    <div class="inline-drawer">
+
+        <div class="inline-drawer-toggle inline-drawer-header">
+
+            <b>📑 Notepad</b>
+
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+
+        </div>
+
+        <div class="inline-drawer-content">
+
+            <div class="notepad-setting-title">
+                Position du bouton 📑
+            </div>
+
+            <select id="notepad_position" class="text_pole">
+                <option value="bottom-right">
+                    Bas — droite
+                </option>
+
+                <option value="bottom-left">
+                    Bas — gauche
+                </option>
+
+                <option value="top-right">
+                    Haut — droite
+                </option>
+
+                <option value="top-left">
+                    Haut — gauche
+                </option>
+            </select>
+
+
+            <div class="notepad-setting-title">
+                Distance horizontale
+            </div>
+
+            <input
+                id="notepad_offset_x"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+            >
+
+            <div class="notepad-value">
+                <span id="notepad_offset_x_value">16</span> px
+            </div>
+
+
+            <div class="notepad-setting-title">
+                Distance verticale
+            </div>
+
+            <input
+                id="notepad_offset_y"
+                type="range"
+                min="0"
+                max="150"
+                step="1"
+            >
+
+            <div class="notepad-value">
+                <span id="notepad_offset_y_value">16</span> px
+            </div>
+
+
+            <div class="notepad-setting-title">
+                Taille du bouton
+            </div>
+
+            <input
+                id="notepad_button_size"
+                type="range"
+                min="28"
+                max="70"
+                step="1"
+            >
+
+            <div class="notepad-value">
+                <span id="notepad_button_size_value">42</span> px
+            </div>
+
+
+            <label class="checkbox_label">
+
+                <input
+                    id="notepad_enabled"
+                    type="checkbox"
+                >
+
+                <span>
+                    Afficher le bouton 📑
+                </span>
+
+            </label>
+
+
+            <div class="notepad-setting-title">
+                Aperçu
+            </div>
+
+            <div class="notepad-preview">
+
+                <span id="notepad_preview_button">
+                    📑
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
