@@ -1,232 +1,230 @@
-(() => {
-    const STORAGE_KEY = 'st_notepad_content';
-    const POS_KEY = 'st_notepad_position';
-    const SIZE_KEY = 'st_notepad_size';
+const NOTEPAD_KEY = 'st_notepad_content';
 
-    function loadState() {
-        return {
-            content: localStorage.getItem(STORAGE_KEY) || '',
-            position: JSON.parse(localStorage.getItem(POS_KEY) || 'null'),
-            size: JSON.parse(localStorage.getItem(SIZE_KEY) || 'null')
-        };
+function init() {
+    // Évite les doublons
+    if (document.getElementById('st-notepad-button')) {
+        return;
     }
 
-    function saveContent() {
-        localStorage.setItem(
-            STORAGE_KEY,
-            $('#st-notepad-text').val() || ''
-        );
-    }
+    // =========================
+    // BOUTON 📑
+    // =========================
 
-    function savePosition() {
-        const box = document.getElementById('st-notepad');
+    const button = document.createElement('button');
 
-        if (!box) return;
+    button.id = 'st-notepad-button';
+    button.className = 'st-notepad-button';
+    button.innerHTML = '📑';
+    button.title = 'Notepad';
 
-        localStorage.setItem(
-            POS_KEY,
-            JSON.stringify({
-                left: box.style.left,
-                top: box.style.top
-            })
-        );
-    }
+    document.body.appendChild(button);
 
-    function saveSize() {
-        const box = document.getElementById('st-notepad');
 
-        if (!box) return;
+    // =========================
+    // FENÊTRE
+    // =========================
 
-        localStorage.setItem(
-            SIZE_KEY,
-            JSON.stringify({
-                width: box.style.width,
-                height: box.style.height
-            })
-        );
-    }
+    const notepad = document.createElement('div');
 
-    function createNotepad() {
-        if (document.getElementById('st-notepad-button')) return;
+    notepad.id = 'st-notepad';
+    notepad.className = 'st-notepad';
+    notepad.style.display = 'none';
 
-        const state = loadState();
+    notepad.innerHTML = `
+        <div class="st-notepad-header">
 
-        $('body').append(`
-            <button
-                id="st-notepad-button"
-                class="st-notepad-button"
-                title="Notepad"
-                aria-label="Ouvrir le Notepad">
-                📑
-            </button>
+            <span class="st-notepad-title">
+                📑 Notepad
+            </span>
 
-            <div id="st-notepad" class="st-notepad" hidden>
+            <div class="st-notepad-buttons">
 
-                <div class="st-notepad-header">
+                <button
+                    id="st-notepad-clear"
+                    title="Effacer">
+                    🗑️
+                </button>
 
-                    <span class="st-notepad-title">
-                        📑 Notepad
-                    </span>
-
-                    <div class="st-notepad-actions">
-
-                        <button
-                            type="button"
-                            id="st-notepad-clear"
-                            title="Effacer">
-                            🗑️
-                        </button>
-
-                        <button
-                            type="button"
-                            id="st-notepad-close"
-                            title="Fermer">
-                            ×
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <textarea
-                    id="st-notepad-text"
-                    spellcheck="false"
-                    placeholder="Écris tes notes ici..."></textarea>
-
-                <div class="st-notepad-footer">
-                    Sauvegarde automatique
-                </div>
+                <button
+                    id="st-notepad-close"
+                    title="Fermer">
+                    ×
+                </button>
 
             </div>
-        `);
 
-        const box = document.getElementById('st-notepad');
-        const textarea = document.getElementById('st-notepad-text');
+        </div>
 
-        textarea.value = state.content;
+        <textarea
+            id="st-notepad-text"
+            placeholder="Écris tes notes ici..."
+            spellcheck="false"></textarea>
 
-        if (state.position) {
-            box.style.left = state.position.left;
-            box.style.top = state.position.top;
-            box.style.right = 'auto';
-            box.style.bottom = 'auto';
+    `;
+
+    document.body.appendChild(notepad);
+
+
+    // =========================
+    // CHARGER LES NOTES
+    // =========================
+
+    const textarea =
+        document.getElementById('st-notepad-text');
+
+    textarea.value =
+        localStorage.getItem(NOTEPAD_KEY) || '';
+
+
+    // =========================
+    // OUVRIR / FERMER
+    // =========================
+
+    button.addEventListener('click', () => {
+
+        if (notepad.style.display === 'none') {
+
+            notepad.style.display = 'flex';
+
+            textarea.focus();
+
+        } else {
+
+            notepad.style.display = 'none';
+
         }
 
-        if (state.size) {
-            box.style.width = state.size.width;
-            box.style.height = state.size.height;
-        }
-
-        $('#st-notepad-button').on('click', () => {
-            box.hidden = !box.hidden;
-
-            if (!box.hidden) {
-                textarea.focus();
-            }
-        });
-
-        $('#st-notepad-close').on('click', () => {
-            box.hidden = true;
-        });
-
-        $('#st-notepad-clear').on('click', () => {
-            if (confirm('Effacer toutes les notes ?')) {
-                textarea.value = '';
-                saveContent();
-                textarea.focus();
-            }
-        });
-
-        $('#st-notepad-text').on('input', saveContent);
-
-        makeDraggable(
-            box,
-            box.querySelector('.st-notepad-header')
-        );
-
-        makeResizable(box);
-    }
-
-    function makeDraggable(box, handle) {
-
-        let dragging = false;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        handle.addEventListener('pointerdown', (event) => {
-
-            if (event.target.closest('button')) return;
-
-            const rect = box.getBoundingClientRect();
-
-            dragging = true;
-
-            offsetX = event.clientX - rect.left;
-            offsetY = event.clientY - rect.top;
-
-            box.style.left = rect.left + 'px';
-            box.style.top = rect.top + 'px';
-
-            box.style.right = 'auto';
-            box.style.bottom = 'auto';
-
-            handle.setPointerCapture?.(event.pointerId);
-
-            box.classList.add('dragging');
-        });
-
-        handle.addEventListener('pointermove', (event) => {
-
-            if (!dragging) return;
-
-            const maxLeft =
-                Math.max(0, window.innerWidth - box.offsetWidth);
-
-            const maxTop =
-                Math.max(0, window.innerHeight - box.offsetHeight);
-
-            box.style.left =
-                Math.min(
-                    Math.max(0, event.clientX - offsetX),
-                    maxLeft
-                ) + 'px';
-
-            box.style.top =
-                Math.min(
-                    Math.max(0, event.clientY - offsetY),
-                    maxTop
-                ) + 'px';
-        });
-
-        handle.addEventListener('pointerup', () => {
-
-            if (!dragging) return;
-
-            dragging = false;
-
-            box.classList.remove('dragging');
-
-            savePosition();
-        });
-    }
-
-    function makeResizable(box) {
-
-        if (typeof ResizeObserver === 'undefined') return;
-
-        const observer = new ResizeObserver(() => {
-
-            if (!box.hidden) {
-                saveSize();
-            }
-
-        });
-
-        observer.observe(box);
-    }
-
-    $(document).ready(() => {
-        setTimeout(createNotepad, 500);
     });
 
-})();
+
+    document
+        .getElementById('st-notepad-close')
+        .addEventListener('click', () => {
+
+            notepad.style.display = 'none';
+
+        });
+
+
+    // =========================
+    // SAUVEGARDE AUTOMATIQUE
+    // =========================
+
+    textarea.addEventListener('input', () => {
+
+        localStorage.setItem(
+            NOTEPAD_KEY,
+            textarea.value
+        );
+
+    });
+
+
+    // =========================
+    // EFFACER
+    // =========================
+
+    document
+        .getElementById('st-notepad-clear')
+        .addEventListener('click', () => {
+
+            textarea.value = '';
+
+            localStorage.removeItem(
+                NOTEPAD_KEY
+            );
+
+            textarea.focus();
+
+        });
+
+
+    // =========================
+    // DÉPLACER LA FENÊTRE
+    // =========================
+
+    const header =
+        notepad.querySelector('.st-notepad-header');
+
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    header.addEventListener('pointerdown', (event) => {
+
+        if (event.target.closest('button')) {
+            return;
+        }
+
+        dragging = true;
+
+        const rect =
+            notepad.getBoundingClientRect();
+
+        offsetX =
+            event.clientX - rect.left;
+
+        offsetY =
+            event.clientY - rect.top;
+
+        notepad.style.right = 'auto';
+        notepad.style.bottom = 'auto';
+
+        notepad.style.left =
+            rect.left + 'px';
+
+        notepad.style.top =
+            rect.top + 'px';
+
+        header.setPointerCapture(
+            event.pointerId
+        );
+
+    });
+
+
+    header.addEventListener('pointermove', (event) => {
+
+        if (!dragging) {
+            return;
+        }
+
+        let x =
+            event.clientX - offsetX;
+
+        let y =
+            event.clientY - offsetY;
+
+        const maxX =
+            window.innerWidth -
+            notepad.offsetWidth;
+
+        const maxY =
+            window.innerHeight -
+            notepad.offsetHeight;
+
+        x = Math.max(
+            0,
+            Math.min(x, maxX)
+        );
+
+        y = Math.max(
+            0,
+            Math.min(y, maxY)
+        );
+
+        notepad.style.left =
+            x + 'px';
+
+        notepad.style.top =
+            y + 'px';
+
+    });
+
+
+    header.addEventListener('pointerup', () => {
+
+        dragging = false;
+
+    });
+}
