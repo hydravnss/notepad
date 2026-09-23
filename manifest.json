@@ -1,12 +1,15 @@
 {
-  "display_name": "Notepad",
-  "loading_order": 10,
-  "requires": [],
-  "optional": [],
-  "js": "index.js",
-  "css": "style.css",
-  "author": "Hydra",
-  "version": "1.0.0",
-  "homePage": "",
-  "auto_update": false
+    "display_name": "Notepad",
+    "loading_order": 10,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "Hydra",
+    "version": "1.0.1",
+    "homePage": "",
+    "auto_update": false,
+    "hooks": {
+        "activate": "init"
+    }
 }
